@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"net/http"
@@ -10,14 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GET /users
 func GetUsers(c *gin.Context) {
 	var users []models.User
 	database.DB.Find(&users)
 	c.JSON(200, users)
 }
 
-// GET /users/:id
 func GetUserById(c *gin.Context) {
 	idParam := c.Param("id")
 	id, _ := strconv.Atoi(idParam)
@@ -34,7 +32,6 @@ func GetUserById(c *gin.Context) {
 	c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 }
 
-// POST /users
 func CreateUser(c *gin.Context) {
 	var newUser models.User
 	if err := c.ShouldBindJSON(&newUser); err != nil {
@@ -46,7 +43,6 @@ func CreateUser(c *gin.Context) {
 	c.JSON(201, newUser)
 }
 
-// DELETE /users/:id
 func DeleteUser(c *gin.Context) {
 	idParam := c.Param("id")
 	id, _ := strconv.Atoi(idParam)
