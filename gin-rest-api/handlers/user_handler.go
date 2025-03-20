@@ -4,19 +4,17 @@ import (
 	"net/http"
 	"strconv"
 
+	"gin-rest-api/database"
 	"gin-rest-api/models"
 
 	"github.com/gin-gonic/gin"
 )
 
-var users = []models.User{
-	{ID: 1, FirstName: "John", LastName: "Doe", Email: "johndoe@gmail.com"},
-	{ID: 2, FirstName: "Jane", LastName: "Doe", Email: "janedoe@gmail.com"},
-}
-
 // GET /users
 func GetUsers(c *gin.Context) {
-	c.JSON(http.StatusOK, users)
+	var users []models.User
+	database.DB.Find(&users)
+	c.JSON(200, users)
 }
 
 // GET /users/:id
@@ -24,8 +22,11 @@ func GetUserById(c *gin.Context) {
 	idParam := c.Param("id")
 	id, _ := strconv.Atoi(idParam)
 
+	var users []models.User
+	database.DB.Find(&users)
+
 	for _, user := range users {
-		if user.ID == id {
+		if user.ID == uint(id) {
 			c.JSON(http.StatusOK, user)
 			return
 		}
@@ -36,13 +37,13 @@ func GetUserById(c *gin.Context) {
 // POST /users
 func CreateUser(c *gin.Context) {
 	var newUser models.User
-	if err := c.BindJSON(&newUser); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid request"})
+	if err := c.ShouldBindJSON(&newUser); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	newUser.ID = len(users) + 1
-	users = append(users, newUser)
-	c.JSON(http.StatusCreated, newUser)
+
+	database.DB.Create(&newUser)
+	c.JSON(201, newUser)
 }
 
 // DELETE /users/:id
@@ -50,12 +51,6 @@ func DeleteUser(c *gin.Context) {
 	idParam := c.Param("id")
 	id, _ := strconv.Atoi(idParam)
 
-	for i, user := range users {
-		if user.ID == id {
-			users = append(users[:i], users[i+1:]...)
-			c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
-			return
-		}
-	}
-	c.JSON(http.StatusNotFound, gin.H{"message": "User not found"})
+	database.DB.Delete(&models.User{}, id)
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
 }

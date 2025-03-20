@@ -1,12 +1,17 @@
 package main
 
 import (
+	"gin-rest-api/database"
+	"gin-rest-api/models"
 	"gin-rest-api/routes"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	database.ConnectDB()
+	database.DB.AutoMigrate(&models.User{})
+
 	r := gin.Default()
 
 	/* r.GET("/ping", func(c *gin.Context) {
