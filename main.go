@@ -225,7 +225,7 @@ for i := 0; i < 2; i++ {
 //}
 
 // Making HTTP Requests and Handling Responses
-package main
+/* package main
 
 import (
 	"fmt"
@@ -274,4 +274,55 @@ func main() {
 	for result := range ch {
 		fmt.Println(result)
 	}
+} */
+
+// Go Turorial
+package main
+
+import (
+	"fmt"
+)
+
+func sum(s []int, c chan int) {
+	sum := 0
+	for _, v := range s {
+		sum += v
+	}
+	c <- sum
+}
+
+func fibonacci(n int, c chan int) {
+	x, y := 0, 1
+	for i := 0; i < n; i++ {
+		c <- x
+		x, y = y, x+y
+	}
+	close(c)
+}
+
+func main() {
+	/* fmt.Println("My fav nmber is:", rand.Intn(10))
+
+	sum := 0
+	for i := 0; i < 10; i++ {
+		sum += i
+	}
+
+	fmt.Println("Sum:", sum) */
+
+	s := []int{7, 2, 8, -9, 4, 0}
+	c := make(chan int)
+	go sum(s[:len(s)/2], c)
+	go sum(s[len(s)/2:], c)
+
+	x, y := <-c, <-c
+
+	fmt.Println(x, y, x+y)
+
+	c2 := make(chan int, 10)
+	go fibonacci(cap(c2), c2)
+	for i := range c2 {
+		fmt.Println(i)
+	}
+
 }
